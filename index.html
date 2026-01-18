@@ -12,8 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
-  <script type="module" crossorigin src="/training-log-pwa/assets/index-C80o9FwM.js"></script>
-  <link rel="stylesheet" crossorigin href="/training-log-pwa/assets/index-DVBciD-h.css">
+  <script type="module" crossorigin src="/training-log-pwa/assets/index-KzmHGQx4.js"></script>
+  <link rel="stylesheet" crossorigin href="/training-log-pwa/assets/index-BC_IkHG6.css">
 </head>
 
 <body>
@@ -181,31 +181,50 @@
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="switchTab('dashboard', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
-                </svg><span>Log</span>
+                    <path d="M10 3H3v7h7V3zm11 0h-7v7h7V3zm0 11h-7v7h7v-7zm-11 0H3v7h7v-7z" />
+                </svg>
+                <span>Log</span>
             </div>
             <div class="nav-item" onclick="switchTab('workout', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24">
                     <path
-                        d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22 14.86 20.57 16.29 22 18.43 19.86 19.86 21.29 21.29 19.86l-1.43-1.43L21.29 17l-1.43-1.43L18.43 17l-1.43-1.43L22 10.57l-1.43-1.43L19.14 10.57z" />
-                </svg><span>Train</span>
+                        d="M8.5 5l-1.5 1.5L9 8.5 7.5 10l-2-2L4 9.5 5.5 11l-2 2-2-2L0 12.5 1.5 14l5-5 1.5 1.5L6.5 12l2 2 1.5-1.5 8 8 1.5-1.5-1.5-1.5 1.5-1.5L21 20l-1.5-1.5 2-2 1.5 1.5 1-1-1.5-1.5L24 14l-1.5-1.5-5 5-1.5-1.5 1.5-1.5L16 13l-1.5-1.5-8-8zM18 1l-2 2h-3l2-2h3zm-6 2l-2 2H7l2-2h3z" />
+                    <path d="M6 5h12v2H6z" transform="rotate(-45 12 6)" style="display:none" />
+                    <!-- Simpler Dumbbell -->
+                    <path
+                        d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22 14.86 20.57 16.29 22 18.43 19.86 19.86 21.29 21.29 19.86l-1.43-1.43L21.29 17l-1.43-1.43L18.43 17l-1.43-1.43L22 10.57l-1.43-1.43L19.14 10.57z"
+                        style="display:none" />
+                    <path
+                        d="M18 3c0-1.1-.9-2-2-2h-8c-1.1 0-2 .9-2 2v2c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2v2c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-2c1.1 0 2-.9 2-2v-2c0-1.1-.9-2-2-2V5c1.1 0 2-.9 2-2V3zm-2 0v2h-8V3h8zm-8 4h8v2h-8V7zm0 10v-2h8v2h-8zm8 4h-8v-2h8v2z"
+                        style="display:none" />
+                    <!-- Modern dumbbell -->
+                    <path
+                        d="M8.38 5.56L5.56 8.38 2.73 5.56 5.56 2.73zM21.27 18.44l-2.83 2.83-2.83-2.83 2.83-2.83zM19.15 7.69l-3.54 3.54 1.41 1.41-3.53 3.54-1.42-1.42 3.54-3.53-1.41-1.42 3.53-3.54 1.42 1.42zM7.69 19.15l3.54-3.54-1.41-1.41 3.53-3.54 1.42 1.42-3.54 3.53 1.41 1.42-3.53 3.54-1.42-1.42z"
+                        opacity="0.9" />
+                </svg>
+                <span>Train</span>
             </div>
             <div class="nav-item" onclick="switchTab('nutrition', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24">
+                    <!-- Globe Icon -->
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-                </svg><span>Input</span>
+                </svg>
+                <span>Input</span>
             </div>
             <div class="nav-item" onclick="switchTab('alignment', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24">
+                    <!-- Structure (Person Stand) -->
                     <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z" />
-                </svg><span>Structure</span>
+                </svg>
+                <span>Structure</span>
             </div>
             <div class="nav-item" onclick="switchTab('rank', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path
-                        d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM12 15c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                </svg><span>Standing</span>
+                    <!-- Standing (Triangle/Alert) -->
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                <span>Standing</span>
             </div>
         </nav>
     </div>
