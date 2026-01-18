@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link rel="manifest" href="/manifest.json" />
+  <title>Training Log - Obsidian System</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <meta name="theme-color" content="#050505">
+  <script type="module" crossorigin src="/assets/index-oRniZGXP.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DL5Gt7PD.css">
+</head>
+
+<body>
+  <div id="app-root">
+    <div class="app-container">
+    
+        <!-- HEADER -->
+        <header class="header-minimal">
+          <div class="app-title-container">
+              <div class="app-title">Training Log</div>
+              <div class="app-subtitle">Personal Discipline System</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+              <div class="time-pill" id="time-context">S1 : CH 1</div>
+              <div class="day-pill" id="current-day" style="display: none;">TODAY</div>
+          </div>
+        </header>
+    
+        <!-- 1. DASHBOARD -->
+        <div id="screen-dashboard" class="screen active">
+          <div class="score-container">
+            <div class="score-ring-bg"></div>
+            <div class="score-value" id="daily-xp-display">0</div>
+            <div class="score-label" id="daily-status">No Record</div>
+          </div>
+    
+          <div class="consistency-card">
+            <div>
+              <div class="consistency-label">Continuity</div>
+              <div class="consistency-val" id="streak-display">0 Entries</div>
+            </div>
+            <svg class="flame-icon" viewBox="0 0 24 24" fill="#f59e0b">
+              <path d="M12,22c4.97,0,9-4.03,9-9c0-4.97-9-13-9-13S3,8.03,3,13C3,17.97,7.03,22,12,22z M12,10c0,0,3,3,3,5 c0,1.66-1.34,3-3,3s-3-1.34-3-3C9,13,12,10,12,10z"/>
+            </svg>
+          </div>
+          
+          <div id="forecast-display" class="forecast-text"></div>
+    
+          <div class="card">
+            <h3 id="weekly-title" style="margin-bottom:20px; font-size:14px; text-transform:uppercase; opacity:0.7;">Recent Pattern</h3>
+            <div class="week-row" id="week-row"></div>
+          </div>
+        </div>
+    
+        <!-- 2. WORKOUT -->
+        <div id="screen-workout" class="screen">
+          <div class="muscle-pill" id="muscle-group">Loading...</div>
+          
+          <div class="timer-card">
+            <div class="timer-val" id="timer-display">00:00</div>
+            <div class="timer-actions">
+              <button class="timer-btn" onclick="startTimer(30)">30s</button>
+              <button class="timer-btn" onclick="startTimer(60)">60s</button>
+              <button class="timer-btn" style="color:var(--text-secondary)" onclick="stopTimer()">Stop</button>
+            </div>
+          </div>
+    
+          <div id="masai-indicator"></div>
+          <div class="card" id="workout-card"><div id="exercise-list"></div></div>
+          <button class="btn-main" id="workout-btn" onclick="toggleWorkout()">Log Session</button>
+        </div>
+    
+        <!-- 3. FUEL -->
+        <div id="screen-nutrition" class="screen">
+          <h2 style="margin-bottom:8px; font-size:20px;">Fuel</h2>
+          <p style="color:var(--text-secondary); font-size:13px; margin-bottom:24px;">Body input record.</p>
+          <div id="nutrition-list"></div>
+          <div class="fuel-tip">Training reflects fuel quality.</div>
+        </div>
+    
+        <!-- 4. ALIGN -->
+        <div id="screen-alignment" class="screen">
+          <h2 style="margin-bottom:8px; font-size:20px;">Structural Maintenance</h2>
+          <p style="color:var(--text-secondary); font-size:13px; margin-bottom:24px;">Neglect accumulates.</p>
+          <div id="posture-list"></div>
+          
+          <div class="card" id="sleep-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:16px;">Deep Recovery</h3>
+                <span style="font-size:20px;">🌙</span>
+            </div>
+            <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:20px;">Sustained recovery required.</p>
+            <button class="btn-main" id="sleep-btn" onclick="toggleSleep()">Log Sleep Intent</button>
+          </div>
+        </div>
+    
+        <!-- 5. RANK -->
+        <div id="screen-rank" class="screen">
+          <div class="rank-display">
+            <div id="badge-anim-container" class="badge-container">
+              <div id="rank-badge-shape" class="badge-shape shape-circle">
+                <!-- Geometry Only -->
+              </div>
+            </div>
+            
+            <div class="rank-info" id="rank-info-container">
+              <div class="tier-name" id="tier-name">INITIATE</div>
+              <div class="user-title" id="user-title">Novice</div>
+              <div class="rank-streak" id="rank-streak-display">0 DAY STREAK</div>
+              <div class="rank-subtitle" id="rank-subtitle">Initialization sequence active.</div>
+              
+              <div class="xp-bar-container" id="xp-container">
+                <div class="xp-bar-fill" id="xp-bar"></div>
+              </div>
+              <div class="xp-text" id="xp-text-row">
+                <span id="current-xp">0</span>
+                <span id="next-xp">Distance to next standing</span>
+              </div>
+              <div class="tooltip-text" id="rank-tooltip">Entry recorded. No pattern established.</div>
+            </div>
+          </div>
+    
+          <div class="card" style="margin-top:32px">
+            <h3 style="margin-bottom:16px; font-size:14px;">Longitudinal Record</h3>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:13px;">
+                <span style="color:var(--text-secondary)">Cumulative Load</span>
+                <span style="font-weight:700" id="stat-total-xp">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:13px;">
+                <span style="color:var(--text-secondary)">High-Quality Days</span>
+                <span style="font-weight:700" id="stat-perfect">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span style="color:var(--text-secondary)">Time Under Discipline</span>
+                <span style="font-weight:700" id="stat-time">6 Months</span>
+            </div>
+          </div>
+    
+          <div class="dev-panel">
+            <button class="dev-btn" onclick="openManual()">Fix Past</button>
+            <button class="dev-btn" onclick="addTestXP()">+50 XP</button>
+            <button class="dev-btn" onclick="exportData()">Export</button>
+            <button class="dev-btn" onclick="document.getElementById('import-file').click()">Import</button>
+            <button class="dev-btn" onclick="undoOnce()">Undo</button>
+            <button class="dev-btn" onclick="confirmReset(this)">Reset</button>
+          </div>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(this)">
+        </div>
+    
+        <!-- MANUAL ENTRY MODAL -->
+        <div id="manual-modal" class="modal-overlay">
+            <div class="modal-card">
+              <h3>Manual Log</h3>
+              <label>Date Selection <input type="date" id="manual-date"></label>
+              <div class="toggle-row"><span>Workout Completed</span><input type="checkbox" id="manual-workout"></div>
+              <div class="toggle-row"><span>Sleep Intent</span><input type="checkbox" id="manual-sleep"></div>
+              <div class="modal-actions">
+                <button onclick="closeManual()">Cancel</button>
+                <button onclick="saveManual()" class="primary">Save</button>
+              </div>
+            </div>
+          </div>
+          
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" role="status" aria-live="polite" style="position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:10px 16px; border-radius:10px; font-size:13px; display:none; z-index:2000; transition: opacity 0.3s;"></div>
+    
+        <!-- NAV -->
+        <nav class="bottom-nav">
+          <div class="nav-item active" onclick="switchTab('dashboard', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg><span>Log</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('workout', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22 14.86 20.57 16.29 22 18.43 19.86 19.86 21.29 21.29 19.86l-1.43-1.43L21.29 17l-1.43-1.43L18.43 17l-1.43-1.43L22 10.57l-1.43-1.43L19.14 10.57z"/></svg><span>Train</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('nutrition', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><span>Input</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('alignment', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg><span>Structure</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('rank', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM12 15c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg><span>Standing</span>
+          </div>
+        </nav>
+      </div>
+  </div>
+
+</body>
+</html>
