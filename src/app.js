@@ -195,10 +195,10 @@ function getLocalISODate() {
 // --- 5. Context Calculation fix ---
 function getTimeContext() {
     let firstDate = new Date();
-    const valid = allData.filter(e => isISODateString(e.date));
-    if (valid.length > 0) {
-        const sorted = [...valid].sort((a, b) => new Date(a.date) - new Date(b.date));
-        firstDate = new Date(sorted[0].date);
+    // Optimization: Assume allData sorted ascending by date
+    const firstValid = allData.find(e => isISODateString(e.date));
+    if (firstValid) {
+        firstDate = new Date(firstValid.date);
     }
     const currentSimulated = new Date(getLocalISODate());
     const diffTime = Math.max(0, currentSimulated - firstDate);
@@ -210,17 +210,23 @@ function getTimeContext() {
 }
 
 function checkRecoveryDebt(history) {
-    const sorted = [...history].filter(d => isISODateString(d.date)).sort((a, b) => new Date(b.date) - new Date(a.date));
-    const last3 = sorted.slice(0, 3);
+    // Optimization: avoid sort. history is ascending.
+    const valid = history.filter(d => isISODateString(d.date));
+    const last3 = valid.slice(-3).reverse();
     if (last3.length < 3) return false;
     return last3.every(d => !d.sleep_planned);
 }
 
 function checkPartialStreak(history) {
-    const sorted = [...history].filter(d => isISODateString(d.date)).sort((a, b) => new Date(b.date) - new Date(a.date));
-    const pastDays = sorted.filter(d => d.date !== todayData.date);
+    // Optimization: avoid sort. history is ascending.
+    const valid = history.filter(d => isISODateString(d.date));
+    const pastDays = valid.filter(d => d.date !== todayData.date);
     let partialCount = 0;
-    for (let i = 0; i < 3; i++) { if (pastDays[i] && pastDays[i].daily_xp === 5) partialCount++; }
+    const len = pastDays.length;
+    for (let i = 0; i < 3; i++) {
+        const entry = pastDays[len - 1 - i];
+        if (entry && entry.daily_xp === 5) partialCount++;
+    }
     return partialCount >= 3;
 }
 
@@ -228,11 +234,14 @@ function checkPartialStreak(history) {
 function checkLongAbsence(history, refDate) {
     // refDate: ISO date string (e.g. entry.date) or undefined => fallback to todayData.date
     if (history.length < 1) return false;
-    const sorted = [...history].filter(d => isISODateString(d.date)).sort((a, b) => new Date(b.date) - new Date(a.date));
-    const pastEntries = sorted.filter(d => d.date !== (refDate || (todayData && todayData.date)));
+    // Optimization: avoid sort. history is ascending.
+    const valid = history.filter(d => isISODateString(d.date));
+    const targetDate = refDate || (todayData && todayData.date);
+    const pastEntries = valid.filter(d => d.date !== targetDate);
     if (pastEntries.length === 0) return false;
-    const lastEntryDate = new Date(pastEntries[0].date);
-    const todayDate = new Date(refDate || (todayData && todayData.date));
+    // Last entry is the latest one (sorted ascending)
+    const lastEntryDate = new Date(pastEntries[pastEntries.length - 1].date);
+    const todayDate = new Date(targetDate);
     const diffTime = Math.abs(todayDate - lastEntryDate);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays >= 14;
@@ -336,11 +345,13 @@ function analyzeIdentity(history, today, streak) {
 }
 
 function getMomentumState(history) {
-    const sorted = [...history].filter(d => isISODateString(d.date)).sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Optimization: avoid sort. history is ascending.
+    const valid = history.filter(d => isISODateString(d.date));
     let perfectStreak = 0;
     let missStreak = 0;
+    const len = valid.length;
     for (let i = 0; i < 3; i++) {
-        const entry = sorted[i];
+        const entry = valid[len - 1 - i];
         if (!entry) continue;
         const xp = entry.daily_xp;
         if (xp >= 10) perfectStreak++;
