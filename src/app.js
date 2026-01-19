@@ -247,25 +247,38 @@ function checkLongAbsence(history, refDate) {
     return diffDays >= 14;
 }
 
-// --- 2. Optimized Streak Calculation (O(n)) ---
-function calculateStreak(history) {
-    const map = new Map();
-    for (const e of history) {
-        if (isISODateString(e.date)) map.set(e.date, e);
-    }
+let cachedDateMap = null;
+let cachedDataRef = null;
+let cachedDataLen = 0;
 
+function getDateMap() {
+    // Bolt: Cache map to avoid O(N) rebuilds on every render
+    if (cachedDateMap && cachedDataRef === allData && cachedDataLen === allData.length) {
+        return cachedDateMap;
+    }
+    cachedDateMap = new Map();
+    for (const e of allData) {
+        if (isISODateString(e.date)) cachedDateMap.set(e.date, e);
+    }
+    cachedDataRef = allData;
+    cachedDataLen = allData.length;
+    return cachedDateMap;
+}
+
+// --- 2. Optimized Streak Calculation (O(n)) ---
+function calculateStreak(entryMap) {
     const anchor = new Date(getLocalISODate());
     let streak = 0;
 
     const todayIso = `${anchor.getFullYear()}-${String(anchor.getMonth() + 1).padStart(2, '0')}-${String(anchor.getDate()).padStart(2, '0')}`;
-    const todayEntry = map.get(todayIso);
+    const todayEntry = entryMap.get(todayIso);
     let offset = (todayEntry && todayEntry.daily_xp > 0) ? 0 : 1;
 
     for (let i = offset; ; i++) {
         const d = new Date(anchor);
         d.setDate(d.getDate() - i);
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const entry = map.get(iso);
+        const entry = entryMap.get(iso);
         if (entry && entry.daily_xp > 0) streak++;
         else break;
         if (streak > 3650) break;
@@ -428,7 +441,8 @@ function renderApp() {
         const isReturning = checkLongAbsence(allData, todayData.date);
 
         // Fix: True consecutive streak calculation
-        const streak = calculateStreak(allData);
+        const entryMap = getDateMap();
+        const streak = calculateStreak(entryMap);
         const activeDays = totalActiveDays(allData);
 
         let dopaScale = 1.15;
@@ -515,7 +529,7 @@ function renderApp() {
         const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
         // OPTIMIZATION: Build map for week rendering
-        const entryMap = new Map(allData.filter(e => isISODateString(e.date)).map(e => [e.date, e]));
+        // Bolt: Reuse cached map
         UI.weekRow.innerHTML = Array.from({ length: 7 }, (_, i) => {
             const d = new Date(); d.setDate(d.getDate() + dateOffset - (6 - i));
             const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
