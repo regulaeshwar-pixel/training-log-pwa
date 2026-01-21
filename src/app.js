@@ -85,6 +85,25 @@ const RANK_TIERS = [
 ];
 
 let allData = [];
+// --- CACHED DATE MAP ---
+let dateMapCache = null;
+let dateMapRef = null;
+let dateMapLen = 0;
+
+function getDateMap(history) {
+    if (dateMapCache && dateMapRef === history && dateMapLen === history.length) {
+        return dateMapCache;
+    }
+    const map = new Map();
+    for (const e of history) {
+        if (isISODateString(e.date)) map.set(e.date, e);
+    }
+    dateMapCache = map;
+    dateMapRef = history;
+    dateMapLen = history.length;
+    return map;
+}
+
 let todayData = null;
 let dateOffset = 0;
 let timerInterval = null;
@@ -249,10 +268,12 @@ function checkLongAbsence(history, refDate) {
 
 // --- 2. Optimized Streak Calculation (O(n)) ---
 function calculateStreak(history) {
-    const map = new Map();
-    for (const e of history) {
-        if (isISODateString(e.date)) map.set(e.date, e);
-    }
+    // Optimization: Use cached map if history matches allData, otherwise build temporary
+    const map = (history === allData) ? getDateMap(history) : (() => {
+        const m = new Map();
+        for (const e of history) { if (isISODateString(e.date)) m.set(e.date, e); }
+        return m;
+    })();
 
     const anchor = new Date(getLocalISODate());
     let streak = 0;
@@ -261,14 +282,18 @@ function calculateStreak(history) {
     const todayEntry = map.get(todayIso);
     let offset = (todayEntry && todayEntry.daily_xp > 0) ? 0 : 1;
 
-    for (let i = offset; ; i++) {
-        const d = new Date(anchor);
-        d.setDate(d.getDate() - i);
+    // Optimization: Reuse Date object to avoid allocation in loop
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - offset);
+
+    while (true) {
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const entry = map.get(iso);
         if (entry && entry.daily_xp > 0) streak++;
         else break;
         if (streak > 3650) break;
+
+        d.setDate(d.getDate() - 1);
     }
     return streak;
 }
@@ -515,7 +540,7 @@ function renderApp() {
         const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
         // OPTIMIZATION: Build map for week rendering
-        const entryMap = new Map(allData.filter(e => isISODateString(e.date)).map(e => [e.date, e]));
+        const entryMap = getDateMap(allData);
         UI.weekRow.innerHTML = Array.from({ length: 7 }, (_, i) => {
             const d = new Date(); d.setDate(d.getDate() + dateOffset - (6 - i));
             const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
