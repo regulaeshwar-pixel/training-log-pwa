@@ -119,8 +119,25 @@ window.undoOnce = () => {
 };
 
 // --- 1. ISO Validation & Sanitization (with 2yr Purge) ---
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 function isISODateString(s) {
-    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+    return typeof s === 'string' && ISO_DATE_REGEX.test(s);
+}
+
+// Optimization: Cache valid history array to avoid repeated filtering
+let _validHistoryCache = null;
+let _validHistorySource = null;
+let _validHistoryLen = 0;
+
+function getValidHistory(source) {
+    if (_validHistoryCache && _validHistorySource === source && _validHistoryLen === source.length) {
+        return _validHistoryCache;
+    }
+    const valid = source.filter(d => isISODateString(d.date));
+    _validHistoryCache = valid;
+    _validHistorySource = source;
+    _validHistoryLen = source.length;
+    return valid;
 }
 
 function sanitizeData(raw) {
@@ -211,7 +228,7 @@ function getTimeContext() {
 
 function checkRecoveryDebt(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const last3 = valid.slice(-3).reverse();
     if (last3.length < 3) return false;
     return last3.every(d => !d.sleep_planned);
@@ -219,7 +236,7 @@ function checkRecoveryDebt(history) {
 
 function checkPartialStreak(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const pastDays = valid.filter(d => d.date !== todayData.date);
     let partialCount = 0;
     const len = pastDays.length;
@@ -235,7 +252,7 @@ function checkLongAbsence(history, refDate) {
     // refDate: ISO date string (e.g. entry.date) or undefined => fallback to todayData.date
     if (history.length < 1) return false;
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const targetDate = refDate || (todayData && todayData.date);
     const pastEntries = valid.filter(d => d.date !== targetDate);
     if (pastEntries.length === 0) return false;
@@ -334,8 +351,8 @@ function calculateFuelScore(entry) {
 
 function checkMondayKeeper(history) {
     let mondaysHit = 0;
-    history.forEach(d => {
-        if (!isISODateString(d.date)) return;
+    const valid = getValidHistory(history);
+    valid.forEach(d => {
         const date = new Date(d.date);
         if (date.getDay() === 1 && d.daily_xp > 0) mondaysHit++;
     });
@@ -368,7 +385,7 @@ function analyzeIdentity(history, today, streak) {
 
 function getMomentumState(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     let perfectStreak = 0;
     let missStreak = 0;
     const len = valid.length;
