@@ -119,8 +119,9 @@ window.undoOnce = () => {
 };
 
 // --- 1. ISO Validation & Sanitization (with 2yr Purge) ---
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 function isISODateString(s) {
-    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+    return typeof s === 'string' && ISO_DATE_REGEX.test(s);
 }
 
 function sanitizeData(raw) {
