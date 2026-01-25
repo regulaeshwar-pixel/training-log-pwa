@@ -267,6 +267,55 @@ function getDateMap(source) {
 }
 
 function calculateStreak(historyOrMap) {
+    // OPTIMIZATION: Use array iteration if possible (avoid Date creation/string formatting)
+    if (Array.isArray(historyOrMap)) {
+        const history = historyOrMap;
+        const today = getLocalISODate();
+        const todayTs = Date.parse(today);
+
+        let i = history.length - 1;
+        // Skip future dates if any
+        while(i >= 0 && Date.parse(history[i].date) > todayTs) i--;
+
+        let streak = 0;
+        let expectedTs = todayTs;
+
+        while (i >= 0) {
+            const entry = history[i];
+            if (!isISODateString(entry.date)) { i--; continue; }
+
+            const ts = Date.parse(entry.date);
+
+            if (ts > expectedTs) { i--; continue; }
+
+            if (ts === expectedTs) {
+                if ((entry.daily_xp || 0) > 0) {
+                    streak++;
+                    expectedTs -= 86400000;
+                } else {
+                    // If today has 0 XP, we can try yesterday.
+                    if (streak === 0 && expectedTs === todayTs) {
+                        expectedTs -= 86400000;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                // ts < expectedTs -> Gap detected
+                // If checking today and failed (missing), try yesterday
+                if (streak === 0 && expectedTs === todayTs) {
+                    expectedTs -= 86400000;
+                    continue; // Re-evaluate current entry against yesterday
+                } else {
+                    break;
+                }
+            }
+            i--;
+            if (streak > 3650) break;
+        }
+        return streak;
+    }
+
     let map;
     if (historyOrMap instanceof Map) {
         map = historyOrMap;
@@ -420,6 +469,10 @@ function renderApp() {
         if (!todayData) {
             todayData = { date: todayStr, workout_done: false, sleep_planned: false, meals: {}, posture: {}, exercises: {}, daily_xp: 0 };
             allData.push(todayData);
+            // Ensure sorted (handle dateOffset cases)
+            if (allData.length > 1 && allData[allData.length - 2].date > todayStr) {
+                allData.sort((a, b) => (a.date < b.date ? -1 : 1));
+            }
             safeStorage.set(allData);
         }
 
@@ -451,7 +504,7 @@ function renderApp() {
         const isReturning = checkLongAbsence(allData, todayData.date);
 
         // Fix: True consecutive streak calculation
-        const streak = calculateStreak(dateMap);
+        const streak = calculateStreak(allData);
         const activeDays = totalActiveDays(allData);
 
         let dopaScale = 1.15;
@@ -739,6 +792,8 @@ window.saveManual = () => {
     if (!targetEntry) {
         targetEntry = { date: date, workout_done: false, sleep_planned: false, meals: {}, posture: {}, exercises: {}, daily_xp: 0 };
         allData.push(targetEntry);
+        // Ensure sorted
+        allData.sort((a, b) => (a.date < b.date ? -1 : 1));
     }
 
     pushUndo();
