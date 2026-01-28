@@ -196,7 +196,8 @@ function getLocalISODate() {
 function getTimeContext() {
     let firstDate = new Date();
     // Optimization: Assume allData sorted ascending by date
-    const firstValid = allData.find(e => isISODateString(e.date));
+    const valid = getValidHistory(allData);
+    const firstValid = valid[0];
     if (firstValid) {
         firstDate = new Date(firstValid.date);
     }
@@ -211,7 +212,7 @@ function getTimeContext() {
 
 function checkRecoveryDebt(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const last3 = valid.slice(-3).reverse();
     if (last3.length < 3) return false;
     return last3.every(d => !d.sleep_planned);
@@ -219,7 +220,7 @@ function checkRecoveryDebt(history) {
 
 function checkPartialStreak(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const pastDays = valid.filter(d => d.date !== todayData.date);
     let partialCount = 0;
     const len = pastDays.length;
@@ -235,7 +236,7 @@ function checkLongAbsence(history, refDate) {
     // refDate: ISO date string (e.g. entry.date) or undefined => fallback to todayData.date
     if (history.length < 1) return false;
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     const targetDate = refDate || (todayData && todayData.date);
     const pastEntries = valid.filter(d => d.date !== targetDate);
     if (pastEntries.length === 0) return false;
@@ -248,6 +249,21 @@ function checkLongAbsence(history, refDate) {
 }
 
 // --- 2. Optimized Streak Calculation (O(n)) ---
+let _validHistCache = null;
+let _validHistSource = null;
+let _validHistLen = 0;
+
+function getValidHistory(source) {
+    if (_validHistCache && _validHistSource === source && _validHistLen === source.length) {
+        return _validHistCache;
+    }
+    const valid = source.filter(d => isISODateString(d.date));
+    _validHistCache = valid;
+    _validHistSource = source;
+    _validHistLen = source.length;
+    return valid;
+}
+
 let _dateMapCache = null;
 let _dateMapSource = null;
 let _dateMapLen = 0;
@@ -257,8 +273,9 @@ function getDateMap(source) {
         return _dateMapCache;
     }
     const map = new Map();
-    for (const e of source) {
-        if (isISODateString(e.date)) map.set(e.date, e);
+    const valid = getValidHistory(source);
+    for (const e of valid) {
+        map.set(e.date, e);
     }
     _dateMapCache = map;
     _dateMapSource = source;
@@ -296,7 +313,7 @@ function calculateStreak(historyOrMap) {
 }
 
 function totalActiveDays(history) {
-    return history.filter(d => isISODateString(d.date) && (d.daily_xp || 0) > 0).length;
+    return getValidHistory(history).filter(d => (d.daily_xp || 0) > 0).length;
 }
 
 function calculateDailyXP(entry, history, rankIndex) {
@@ -368,7 +385,7 @@ function analyzeIdentity(history, today, streak) {
 
 function getMomentumState(history) {
     // Optimization: avoid sort. history is ascending.
-    const valid = history.filter(d => isISODateString(d.date));
+    const valid = getValidHistory(history);
     let perfectStreak = 0;
     let missStreak = 0;
     const len = valid.length;
